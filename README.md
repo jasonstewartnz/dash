@@ -11,7 +11,7 @@ Panel 1: Housing
 * Date Selector (default=latest)
 * Order by selector
 * Table with data 
-
+* Search bar
 
 Panel 2: State Time series 
 * Select GEO_NAME multi-select

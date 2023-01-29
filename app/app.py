@@ -5,9 +5,9 @@ from dash import Dash, html, dcc, dash_table, Output, Input
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
-
 from snowflake import connector
 from os import getenv
+from datetime import date, datetime
 
 
 
@@ -49,15 +49,23 @@ app = Dash(__name__)
 
 housing_data = import_housing_data()
 levels = housing_data['LEVEL'].unique()
+last_date = housing_data['DATE'].max()
 display_cols = ['GEO_NAME','DATE','VALUE']
 
 
 @app.callback(
     Output("housing-data-table", "data"), 
-    Input("geo-level-dropdown", "value"))
-def display_geo_for_level(level):     
-    
-    data=housing_data.loc[housing_data['LEVEL']==level,display_cols].to_dict('records')
+    Input("geo-level-dropdown", "value"),
+    Input("date-picker", "date"))
+def display_geo_for_level(level,date_value):             
+    # 
+    print(date_value)
+    date_idx = housing_data['DATE']==datetime.strptime(date_value, '%Y-%m-%d').date()
+    level_idx = housing_data['LEVEL']==level
+
+    display_idx = date_idx & level_idx
+
+    data=housing_data.loc[display_idx,display_cols].to_dict('records')
    
     return data
 
@@ -66,13 +74,22 @@ app.layout = html.Div(children=[
     html.H1(children='Housing indexes!'),
     
     html.Div(children='''
-        Dash: A web application framework for your housing data.
+        A web application framework for your housing price data.
     '''),
 
     html.Div([
-        dcc.Dropdown(levels, 'Select Level', id='geo-level-dropdown'),
+        dcc.Dropdown(levels, placeholder='State', id='geo-level-dropdown'),
         html.Div(id='dd-output-container')
     ]),
+
+    html.Div([
+        dcc.DatePickerSingle(
+            id='date-picker',
+            month_format='M-D-Y-Q',
+            placeholder='Select a date',
+            date=last_date
+        )]
+    ),
 
     dash_table.DataTable(
         id='housing-data-table', 
