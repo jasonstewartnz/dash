@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 import pandas as pd
 from snowflake import connector
 from os import getenv
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 
 
@@ -50,6 +50,9 @@ app = Dash(__name__)
 housing_data = import_housing_data()
 levels = housing_data['LEVEL'].unique()
 last_date = housing_data['DATE'].max()
+first_date = housing_data['DATE'].min()
+dates_in_range = [first_date + timedelta(days=x) for x in range((last_date-first_date).days + 1)]
+disable_dates = [date.strftime('%Y-%m-%d') for date in dates_in_range if date not in housing_data['DATE'].values]
 display_cols = ['GEO_NAME','DATE','VALUE']
 
 
@@ -59,15 +62,18 @@ display_cols = ['GEO_NAME','DATE','VALUE']
     Input("date-picker", "date"))
 def display_geo_for_level(level,date_value):             
     # 
-    print(date_value)
+    print(f'Last date found {date_value}')
     date_idx = housing_data['DATE']==datetime.strptime(date_value, '%Y-%m-%d').date()
     level_idx = housing_data['LEVEL']==level
 
     display_idx = date_idx & level_idx
 
-    data=housing_data.loc[display_idx,display_cols].to_dict('records')
+    display_data=housing_data.loc[display_idx,display_cols]
+    if display_data.shape[0]==0:
+        # numpy.repeat
+        display_data = pd.DataFrame(data=[['<No data to display>','<No data to display>','<No data to display>']],columns=display_cols)        
    
-    return data
+    return display_data.to_dict('records')
 
 
 app.layout = html.Div(children=[
@@ -85,9 +91,12 @@ app.layout = html.Div(children=[
     html.Div([
         dcc.DatePickerSingle(
             id='date-picker',
-            month_format='M-D-Y-Q',
-            placeholder='Select a date',
-            date=last_date
+            month_format='M-D-Y',
+            placeholder='M-D-Y',
+            date=last_date,
+            min_date_allowed=first_date.strftime('%Y-%m-%d'),
+            max_date_allowed=last_date.strftime('%Y-%m-%d'),
+            disabled_days=disable_dates
         )]
     ),
 
