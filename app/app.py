@@ -55,12 +55,14 @@ dates_in_range = [first_date + timedelta(days=x) for x in range((last_date-first
 disable_dates = [date.strftime('%Y-%m-%d') for date in dates_in_range if date not in housing_data['DATE'].values]
 display_cols = ['GEO_NAME','DATE','VALUE']
 
+print('Housing data imported')
 
 @app.callback(
     Output("housing-data-table", "data"), 
     Input("geo-level-dropdown", "value"),
-    Input("date-picker", "date"))
-def display_geo_for_level(level,date_value):             
+    Input("date-picker", "date"),
+    Input("order-by-dropdown", "value"))
+def display_geo_for_level(level,date_value,order_by):
     # 
     print(f'Last date found {date_value}')
     date_idx = housing_data['DATE']==datetime.strptime(date_value, '%Y-%m-%d').date()
@@ -71,7 +73,9 @@ def display_geo_for_level(level,date_value):
     display_data=housing_data.loc[display_idx,display_cols]
     if display_data.shape[0]==0:
         # numpy.repeat
-        display_data = pd.DataFrame(data=[['<No data to display>','<No data to display>','<No data to display>']],columns=display_cols)        
+        display_data = pd.DataFrame(data=[['<No data to display>','<No data to display>','<No data to display>']],columns=display_cols)
+    else: 
+        display_data.sort_values(order_by,inplace=True)
    
     return display_data.to_dict('records')
 
@@ -89,6 +93,7 @@ app.layout = html.Div(children=[
     ]),
 
     html.Div([
+        'Select date: ',
         dcc.DatePickerSingle(
             id='date-picker',
             month_format='M-D-Y',
@@ -97,7 +102,14 @@ app.layout = html.Div(children=[
             min_date_allowed=first_date.strftime('%Y-%m-%d'),
             max_date_allowed=last_date.strftime('%Y-%m-%d'),
             disabled_days=disable_dates
-        )]
+        ),
+        'Order by',
+        dcc.Dropdown(['GEO_NAME','VALUE'], 
+            placeholder='Order By', 
+            id='order-by-dropdown',
+            value='GEO_NAME'
+            ),
+        ]
     ),
 
     dash_table.DataTable(
