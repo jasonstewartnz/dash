@@ -4,9 +4,10 @@ FROM python:3.9-slim
 # Copy in files
 WORKDIR /usr/src
 COPY ./requirements.txt ./requirements.txt
+COPY app ./app
 
 # Install deps
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --default-timeout=900
 
 # install dependencies for Snowflake - redundancy?
 # RUN apt-get install -y libssl-dev libffi-dev

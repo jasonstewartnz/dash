@@ -1,4 +1,6 @@
-# Create interactive visualizatin from Snowflake data
+# Housing index plot dash
+Create interactive visualization from Snowflake data that can be hosted in containers
+
 
 
 # Features 
