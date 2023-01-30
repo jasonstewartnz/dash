@@ -132,73 +132,78 @@ app.layout = html.Div(
         Housing index values by geography shown on a given date
     '''
     ),
+    
+    dbc.Row([
+        dbc.Col(html.Div("")), 
+        dbc.Col(us_summary_card), 
+        dbc.Col(html.Div("")),
+    ]),
+    dbc.Row([
+        dcc.Tabs(
+            id="housing-tabs",         
+            className='data-tab-collection',
+            children=[        
+            dcc.Tab(            
+                label='Housing Index table', 
+                className="data-tab",
+                children=html.Div([
+                    dcc.Dropdown(levels, placeholder='State', id='geo-level-dropdown'),
+                    html.Div(id='dd-output-container'),            
+                    html.Div([
 
-    us_summary_card,
+                        'Select date: ',
 
-    dcc.Tabs(
-        id="housing-tabs",         
-        className='data-tab-collection',
-        children=[        
-        dcc.Tab(            
-            label='Housing Index table', 
-            className="data-tab",
-            children=html.Div([
-                dcc.Dropdown(levels, placeholder='State', id='geo-level-dropdown'),
-                html.Div(id='dd-output-container'),            
-                html.Div([
-
-                    'Select date: ',
-
-                    dcc.DatePickerSingle(
-                        id='date-picker',
-                        month_format='M-D-Y',
-                        placeholder='M-D-Y',
-                        date=last_date,
-                        min_date_allowed=first_date.strftime('%Y-%m-%d'),
-                        max_date_allowed=last_date.strftime('%Y-%m-%d'),
-                        disabled_days=disable_dates
-                    ),
-
-                    'Order by',
-
-                    dcc.Dropdown(['GEO_NAME','VALUE'], 
-                        placeholder='Order By', 
-                        id='order-by-dropdown',
-                        value='GEO_NAME',
-                        style={'width': '200px'},
+                        dcc.DatePickerSingle(
+                            id='date-picker',
+                            month_format='M-D-Y',
+                            placeholder='M-D-Y',
+                            date=last_date,
+                            min_date_allowed=first_date.strftime('%Y-%m-%d'),
+                            max_date_allowed=last_date.strftime('%Y-%m-%d'),
+                            disabled_days=disable_dates
                         ),
 
-                    dash_table.DataTable(
-                        id='housing-data-table', 
-                        columns=[{'name':col,'id':col} for col in display_cols],
+                        'Order by',
+
+                        dcc.Dropdown(['GEO_NAME','VALUE'], 
+                            placeholder='Order By', 
+                            id='order-by-dropdown',
+                            value='GEO_NAME',
+                            style={'width': '200px'},
+                            ),
+
+                        dash_table.DataTable(
+                            id='housing-data-table', 
+                            columns=[{'name':col,'id':col} for col in display_cols],
+                        )
+                    ],
+                    className='data-tab-div'
+                    ),
+                ])
+            ),
+            dcc.Tab(
+                label='State History Comparer', 
+                className="data-tab",
+                children=html.Div([
+                    html.H3('Value over time for series'),
+
+                    html.Div([
+                        dcc.Dropdown(state_list, default_selected_states, 
+                            multi=True,
+                            id='state-select-list')
+                    ]),
+
+                    dcc.Graph(
+                        id='geo-value-time-series-chart',
+                                        
+                        figure=plot_state_data(default_selected_states)
                     )
                 ],
                 className='data-tab-div'
                 ),
-            ])
-        ),
-        dcc.Tab(
-            label='State History Comparer', 
-            className="data-tab",
-            children=html.Div([
-                html.H3('Value over time for series'),
-
-                html.Div([
-                    dcc.Dropdown(state_list, default_selected_states, 
-                        multi=True,
-                        id='state-select-list')
-                ]),
-
-                dcc.Graph(
-                    id='geo-value-time-series-chart',
-                                    
-                    figure=plot_state_data(default_selected_states)
-                )
-            ],
-            className='data-tab-div'
-            ),
-        )
-    ]),
+            )
+        ]),
+    ])
 ])
 
 
