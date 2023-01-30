@@ -8,6 +8,8 @@ import pandas as pd
 from snowflake import connector
 from os import getenv
 from datetime import date, datetime, timedelta
+import panel as pn
+pn.extension('plotly')
 
 
 
@@ -89,39 +91,44 @@ app.layout = html.Div(children=[
         A web application framework for your housing price data.
     '''),
 
-    html.Div([
-        dcc.Dropdown(levels, placeholder='State', id='geo-level-dropdown'),
-        html.Div(id='dd-output-container')
-    ]),
+    dcc.Tabs(id="tabs-example-graph", value='tab-1-example-graph', children=[        
+        dcc.Tab(
+        # TypeError: The `dcc.Tab` component (version 2.8.0) detected a Component for a prop other than `children`
+        # Prop value has value Div([Dropdown(options=array(['County', 'CensusCoreBasedStatisticalArea', 'City', 'State'            
+            label='Housing Index table', 
+            children=html.Div([
+                dcc.Dropdown(levels, placeholder='State', id='geo-level-dropdown'),
+                html.Div(id='dd-output-container'),            
+                html.Div([
+                    'Select date: ',
+                    dcc.DatePickerSingle(
+                        id='date-picker',
+                        month_format='M-D-Y',
+                        placeholder='M-D-Y',
+                        date=last_date,
+                        min_date_allowed=first_date.strftime('%Y-%m-%d'),
+                        max_date_allowed=last_date.strftime('%Y-%m-%d'),
+                        disabled_days=disable_dates
+                    ),
+                    'Order by',
+                    dcc.Dropdown(['GEO_NAME','VALUE'], 
+                        placeholder='Order By', 
+                        id='order-by-dropdown',
+                        value='GEO_NAME'
+                        ),
+                ]),
 
-    html.Div([
-        'Select date: ',
-        dcc.DatePickerSingle(
-            id='date-picker',
-            month_format='M-D-Y',
-            placeholder='M-D-Y',
-            date=last_date,
-            min_date_allowed=first_date.strftime('%Y-%m-%d'),
-            max_date_allowed=last_date.strftime('%Y-%m-%d'),
-            disabled_days=disable_dates
+                dash_table.DataTable(
+                    id='housing-data-table', 
+                    columns=[{'name':col,'id':col} for col in display_cols],
+                    style_cell=dict(textAlign='left'),
+                    style_header=dict(backgroundColor="paleturquoise"),
+                    style_data=dict(backgroundColor="lavender")            
+                )
+            ])
         ),
-        'Order by',
-        dcc.Dropdown(['GEO_NAME','VALUE'], 
-            placeholder='Order By', 
-            id='order-by-dropdown',
-            value='GEO_NAME'
-            ),
-        ]
-    ),
-
-    dash_table.DataTable(
-        id='housing-data-table', 
-        columns=[{'name':col,'id':col} for col in display_cols],
-        style_cell=dict(textAlign='left'),
-        style_header=dict(backgroundColor="paleturquoise"),
-        style_data=dict(backgroundColor="lavender")            
-    )
-
+        dcc.Tab(label='Tab Two', value='tab-2-example-graph'),
+    ]),
 ])
 
 
