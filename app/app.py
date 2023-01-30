@@ -127,7 +127,15 @@ app.layout = html.Div(children=[
                 )
             ])
         ),
-        dcc.Tab(label='Tab Two', value='tab-2-example-graph'),
+        dcc.Tab(
+            label='Time Series', 
+            children=html.Div([
+                html.H3('Value over time for series'),
+
+                dcc.Graph(
+                    px.line( housing_data.groupby('GEO_NAME')['VALUE'] )
+                )
+            ]),
     ]),
 ])
 
