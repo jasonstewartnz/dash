@@ -18,3 +18,10 @@
 #housing-data-table .dash-cell {
     background-color: lightgray;
 }
+
+.card-body {
+    background-color: lightblue;
+    align-items: center;
+    margin-left: 300px;
+    margin-right: 300px;
+}

@@ -8,6 +8,8 @@ import pandas as pd
 from snowflake import connector
 from os import getenv
 from datetime import date, datetime, timedelta
+import dash_bootstrap_components as dbc
+import warnings
 
 
 def import_housing_data():
@@ -35,6 +37,7 @@ def import_housing_data():
     """
 
     print('Importing housing data from db')
+    # suppress this warning
     housing_data = pd.read_sql( sql, ctx )
 
     return housing_data
@@ -59,6 +62,22 @@ display_cols = ['GEO_NAME','DATE','VALUE']
 # transform for state-level time series
 housing_data_state_level = housing_data.loc[housing_data['LEVEL']=='State',:].pivot_table(index='DATE',columns='GEO_NAME',values='VALUE')
 
+# National Summary
+us_idx = (housing_data['GEO_NAME']=='United States') & \
+    (housing_data['LEVEL']=='Country') & \
+    (housing_data['DATE']==last_date)
+us_latest = housing_data.loc[us_idx,'VALUE'].values[0]
+us_summary_card = dbc.Card(
+    dbc.CardBody(
+        [
+            html.H4("US Overall:", id="card-title"),
+            html.H2(f'{round(us_latest)}', id="card-value"),
+            html.P(f"Value for US overall on {last_date}", id="card-description")
+        ]
+    )
+)
+
+# state data
 default_selected_states = ['California']
 state_list = [state for state in housing_data_state_level.columns]
 
@@ -113,6 +132,8 @@ app.layout = html.Div(
         Housing index values by geography shown on a given date
     '''
     ),
+
+    us_summary_card,
 
     dcc.Tabs(
         id="housing-tabs",         
