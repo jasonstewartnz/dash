@@ -115,23 +115,19 @@ app.layout = html.Div(
     ),
 
     dcc.Tabs(
-        id="tabs-example-graph", 
-        value='tab-1-example-graph', 
-        style={'marginTop' : '10px',
-            'marginRight' : '50px',
-            'marginBottom' : '50px',
-            'marginLeft' : '50px',
-        },
+        id="housing-tabs",         
+        className='data-tab-collection',
         children=[        
-        dcc.Tab(
-        # TypeError: The `dcc.Tab` component (version 2.8.0) detected a Component for a prop other than `children`
-        # Prop value has value Div([Dropdown(options=array(['County', 'CensusCoreBasedStatisticalArea', 'City', 'State'            
+        dcc.Tab(            
             label='Housing Index table', 
+            className="data-tab",
             children=html.Div([
                 dcc.Dropdown(levels, placeholder='State', id='geo-level-dropdown'),
                 html.Div(id='dd-output-container'),            
                 html.Div([
+
                     'Select date: ',
+
                     dcc.DatePickerSingle(
                         id='date-picker',
                         month_format='M-D-Y',
@@ -141,25 +137,28 @@ app.layout = html.Div(
                         max_date_allowed=last_date.strftime('%Y-%m-%d'),
                         disabled_days=disable_dates
                     ),
+
                     'Order by',
+
                     dcc.Dropdown(['GEO_NAME','VALUE'], 
                         placeholder='Order By', 
                         id='order-by-dropdown',
-                        value='GEO_NAME'
+                        value='GEO_NAME',
+                        style={'width': '200px'},
                         ),
-                ]),
 
-                dash_table.DataTable(
-                    id='housing-data-table', 
-                    columns=[{'name':col,'id':col} for col in display_cols],
-                    style_cell=dict(textAlign='left'),
-                    style_header=dict(backgroundColor="paleturquoise"),
-                    style_data=dict(backgroundColor="lavender")            
-                )
+                    dash_table.DataTable(
+                        id='housing-data-table', 
+                        columns=[{'name':col,'id':col} for col in display_cols],
+                    )
+                ],
+                className='data-tab-div'
+                ),
             ])
         ),
         dcc.Tab(
-            label='Time Series', 
+            label='State History Comparer', 
+            className="data-tab",
             children=html.Div([
                 html.H3('Value over time for series'),
 
@@ -174,7 +173,9 @@ app.layout = html.Div(
                                     
                     figure=plot_state_data(default_selected_states)
                 )
-            ]),
+            ],
+            className='data-tab-div'
+            ),
         )
     ]),
 ])

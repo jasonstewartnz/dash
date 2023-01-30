@@ -1,0 +1,20 @@
+.tab-parent > div {
+    margin-top : 10px;
+    margin-right : 50px;
+    margin-bottom : 50px;
+    margin-left : 50px;    
+}
+
+#housing-data-table .dash-header, #housing-data-table .dash-cell {
+    /* color : blueviolet; */
+    text-align: left;
+}
+
+#housing-data-table .dash-header {
+    background-color: green;
+    font-weight: bold;
+}
+
+#housing-data-table .dash-cell {
+    background-color: lightgray;
+}
