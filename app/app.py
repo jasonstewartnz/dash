@@ -12,6 +12,8 @@ from datetime import date, datetime, timedelta
 
 
 def import_housing_data():
+    assert (getenv('SNOWSQL_USER') is not None),'Cannot retrieve env variable "SNOWSQL_USER"'
+
     # Gets the version
     ctx = connector.connect(
         user=getenv('SNOWSQL_USER'),
