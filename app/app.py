@@ -8,9 +8,6 @@ import pandas as pd
 from snowflake import connector
 from os import getenv
 from datetime import date, datetime, timedelta
-import panel as pn
-pn.extension('plotly')
-
 
 
 def import_housing_data():
@@ -37,6 +34,7 @@ def import_housing_data():
     ORDER BY date
     """
 
+    print('Importing housing data from db')
     housing_data = pd.read_sql( sql, ctx )
 
     return housing_data
@@ -58,6 +56,11 @@ first_date = housing_data['DATE'].min()
 dates_in_range = [first_date + timedelta(days=x) for x in range((last_date-first_date).days + 1)]
 disable_dates = [date.strftime('%Y-%m-%d') for date in dates_in_range if date not in housing_data['DATE'].values]
 display_cols = ['GEO_NAME','DATE','VALUE']
+# transform for state-level time series
+housing_data_state_level = housing_data.loc[housing_data['LEVEL']=='State',:].pivot_table(index='DATE',columns='GEO_NAME',values='VALUE')
+
+default_selected_states = ['California']
+state_list = [state for state in housing_data_state_level.columns]
 
 print('Housing data imported')
 
@@ -83,15 +86,43 @@ def display_geo_for_level(level,date_value,order_by):
    
     return display_data.to_dict('records')
 
+@app.callback(
+    Output('geo-value-time-series-chart','figure'),
+    Input('state-select-list', 'value'),
+)
+def plot_state_data(selected_states):
 
-app.layout = html.Div(children=[
-    html.H1(children='Housing indexes!'),
+    selected_idx = housing_data_state_level.columns.isin(selected_states)
+    hd_selected_states = housing_data_state_level.loc[:,selected_idx]
+
+    fig = px.line( hd_selected_states )
+
+    return fig
+
+app.layout = html.Div(
+    className="app-header",
+    children=[
+    html.H1(children='Housing indexes!', className="app-header--title"),
     
     html.Div(children='''
         A web application framework for your housing price data.
-    '''),
+    '''),    
 
-    dcc.Tabs(id="tabs-example-graph", value='tab-1-example-graph', children=[        
+    dcc.Markdown('''
+        #### Housing Index Data
+        Housing index values by geography shown on a given date
+    '''
+    ),
+
+    dcc.Tabs(
+        id="tabs-example-graph", 
+        value='tab-1-example-graph', 
+        style={'marginTop' : '10px',
+            'marginRight' : '50px',
+            'marginBottom' : '50px',
+            'marginLeft' : '50px',
+        },
+        children=[        
         dcc.Tab(
         # TypeError: The `dcc.Tab` component (version 2.8.0) detected a Component for a prop other than `children`
         # Prop value has value Div([Dropdown(options=array(['County', 'CensusCoreBasedStatisticalArea', 'City', 'State'            
@@ -132,18 +163,21 @@ app.layout = html.Div(children=[
             children=html.Div([
                 html.H3('Value over time for series'),
 
+                html.Div([
+                    dcc.Dropdown(state_list, default_selected_states, 
+                        multi=True,
+                        id='state-select-list')
+                ]),
+
                 dcc.Graph(
-                    px.line( housing_data.groupby('GEO_NAME')['VALUE'] )
+                    id='geo-value-time-series-chart',
+                                    
+                    figure=plot_state_data(default_selected_states)
                 )
             ]),
+        )
     ]),
 ])
-
-
-# .loc[housing_data['LEVEL']==levels,display_cols]
-
-
-
 
 
 if __name__ == '__main__':

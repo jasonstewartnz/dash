@@ -13,13 +13,7 @@ Panel 1: Housing
 * Table with data 
 * Search bar
 
-Panel 2: State Time series 
+Panel 2: State Time series [Done]
 * Select GEO_NAME multi-select
 * Time-series Value x Time
 
-
-
-
-Order
-1. Index-level selector
-2. Table with data 
