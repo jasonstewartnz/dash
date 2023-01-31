@@ -4,41 +4,28 @@
 from dash import Dash, html, dcc, dash_table, Output, Input
 import plotly.express as px
 import plotly.graph_objects as go
-import pandas as pd
+import pandas as pd # 
 from snowflake import connector
-from os import getenv
+from os import path # getenv 
 from datetime import date, datetime, timedelta
 import dash_bootstrap_components as dbc
 import warnings
-
+from time import sleep
 
 def import_housing_data():
-    assert (getenv('SNOWSQL_USER') is not None),'Cannot retrieve env variable "SNOWSQL_USER"'
+    data_file = './data/housing_data.csv'
+    #isfile, getmtime
+    while not path.isfile(data_file):
+        print(f'Cannot find {data_file}. Waiting for cache update.')
+        sleep(60)
 
-    # Gets the version
-    ctx = connector.connect(
-        user=getenv('SNOWSQL_USER'),
-        password=getenv('SNOWSQL_PASSWORD'),
-        account=getenv('SNOWSQL_ACCOUNT'),
-        warehouse='COMPUTE_WH',
-        database='FHFA_SINGLE_FAMILY_HOME_APPRAISALS__VALUES',
-        schema='cybersyn'
-        )
-
-    sql = """
-    SELECT ind.level, geo_name, date, value 
-    FROM cybersyn.fhfa_uad_timeseries ts
-    JOIN cybersyn.fhfa_uad_attributes att ON ts.variable = att.variable
-    JOIN cybersyn.fhfa_geo_index ind ON ind.id = ts.geo_id
-    WHERE purpose = 'Purchase & Refinance'
-        AND characteristic = ''
-        AND ts.variable = 'Quarterly_Median_Appraised_Value__Purchase_&_Refinance_All_Appraisals'
-    ORDER BY date
-    """
-
-    print('Importing housing data from db')
-    # suppress this warning
-    housing_data = pd.read_sql( sql, ctx )
+    col_dtype={'GEO_NAME':str, 'LEVEL':str,'DATE':str, 'VALUE':float} 
+    # parse_date_cols=['DATE']
+    # headers=['LEVEL','GEO_NAME','DATE','VALUE']
+    # names=headers
+    housing_data = pd.read_csv(data_file,dtype=col_dtype) # , parse_dates=parse_date_cols
+    
+    housing_data['DATE'] = housing_data['DATE'].apply(lambda ds: datetime.strptime(ds, '%Y-%m-%d').date())
 
     return housing_data
 
@@ -81,7 +68,7 @@ us_summary_card = dbc.Card(
 default_selected_states = ['California']
 state_list = [state for state in housing_data_state_level.columns]
 
-print('Housing data imported')
+
 
 @app.callback(
     Output("housing-data-table", "data"), 
@@ -91,7 +78,8 @@ print('Housing data imported')
 def display_geo_for_level(level,date_value,order_by):
     # 
     print(f'Last date found {date_value}')
-    date_idx = housing_data['DATE']==datetime.strptime(date_value, '%Y-%m-%d').date()
+    selected_dt = datetime.strptime(date_value, '%Y-%m-%d').date()
+    date_idx = housing_data['DATE']==selected_dt
     level_idx = housing_data['LEVEL']==level
 
     display_idx = date_idx & level_idx

@@ -1,0 +1,31 @@
+# App specification for data system
+# docker run \
+#     -it \
+#     -dp 8888:8888 \
+#     --mount type=bind,src="$(pwd)",target=/usr/src/app \
+#     --env-file env/vars.sh \
+#     jupyter
+# @TODO secrets
+services:
+    dash: 
+        image: jasonstewartnz/jdash
+        ports: 
+          - 8050:8050
+        working_dir: /usr/src
+        volumes:
+          - housing-data-cache:/usr/src/data
+        env_file:
+          - ../project_vars.sh
+        expose: 
+          - 8050
+    data_cache:
+        image: jasonstewartnz/hd_cache
+        working_dir: /usr/src
+        volumes:
+          - housing-data-cache:/usr/src
+        env_file:
+          - ../project_vars.sh
+        
+
+volumes:
+  housing-data-cache:
