@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd # 
 from snowflake import connector
-from os import path # getenv 
+from os import path 
 from datetime import date, datetime, timedelta
 import dash_bootstrap_components as dbc
 import warnings

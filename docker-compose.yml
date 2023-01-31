@@ -14,8 +14,8 @@ services:
         working_dir: /usr/src
         volumes:
           - housing-data-cache:/usr/src/data
-        env_file:
-          - ../project_vars.sh
+        # env_file:
+        #   - ../project_vars.sh
         expose: 
           - 8050
     data_cache:
