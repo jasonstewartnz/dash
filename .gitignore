@@ -1,2 +1,4 @@
 dash/env
+data_cache/env
+data_cache/housing_data.csv
 docker-run.sh
